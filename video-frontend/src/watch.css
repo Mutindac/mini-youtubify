@@ -1,0 +1,91 @@
+.watch-page {
+    padding: 30px;
+    max-width: 1000px;
+    margin: auto;
+}
+
+.watch-title {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.video-player-container {
+    width: 100%;
+    background: black;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.video-player-container video {
+    width: 100%;
+    max-height: 70vh;
+    background: black;
+}
+
+.video-meta {
+    background: #181818;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.video-meta p {
+    color: #aaa;
+    margin-top: 8px;
+}
+
+.loading {
+    text-align: center;
+    font-size: 24px;
+    margin-top: 50px;
+}
+
+.error {
+    color: red;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.video-player-container {
+    max-width: 900px;
+    margin: auto;
+}
+
+.quality-selector {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+}
+
+.quality-selector select {
+    background: #181818;
+    color: white;
+    border: 1px solid #333;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.video-actions {
+    margin-top: 20px;
+}
+
+/* HOME BUTTON */
+.home-btn {
+    width: auto;
+    color: white;
+    border: none;
+    background: #181818;
+    cursor: pointer;
+}
+
+.home-btn:hover {
+    background: #59e563;
+    transform: scale(1.05);
+}
+
+.home-btn:active {
+    transform: scale(0.98);
+}
