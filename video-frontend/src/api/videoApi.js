@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:7000';
+const BASE_URL = 'https://mini-youtubify.onrender.com';
 import axios from 'axios'; 
 
 export async function getVideos() {
