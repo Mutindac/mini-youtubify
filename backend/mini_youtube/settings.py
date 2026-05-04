@@ -76,8 +76,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'mini_youtube.urls'
-CORS_ALLOW_ALL_ORIGINS=True
 
+
+CORS_ALLOWED_ORIGINS = [
+    "https://mini-youtubify.vercel.app",
+]
+CORS_ALLOW_ALL_ORIGINS = False
 
 TEMPLATES = [
     {
@@ -161,4 +165,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-CORS_ALLOW_ALL_ORIGINS = True
