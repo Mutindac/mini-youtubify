@@ -25,8 +25,8 @@ class VideoUploadView(APIView):
                 eager_async=True,
             )
 
-            public_id = result['public_id']
-            cloud_name = config('CLOUDINARY_CLOUD_NAME')
+            ppublic_id = result['public_id']
+            cloud_name = "dvhvxdnrh"
             thumbnail_url = f"https://res.cloudinary.com/{cloud_name}/video/upload/so_0,f_jpg/{public_id}.jpg"
 
             video.cloudinary_public_id = public_id
