@@ -1,10 +1,10 @@
 import cloudinary.uploader
+from decouple import config
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Video
 from .serializers import VideoSerializer
-
 
 class VideoUploadView(APIView):
     def post(self, request):
@@ -17,7 +17,6 @@ class VideoUploadView(APIView):
         video = Video.objects.create(title=title, status='processing')
 
         try:
-            # Upload to Cloudinary
             result = cloudinary.uploader.upload(
                 video_file,
                 resource_type='video',
@@ -27,9 +26,8 @@ class VideoUploadView(APIView):
             )
 
             public_id = result['public_id']
-
-            # Cloudinary auto thumbnail
-            thumbnail_url = f"https://res.cloudinary.com/{result['secure_url'].split('/')[4]}/video/upload/so_0,f_jpg/{public_id}.jpg"
+            cloud_name = config('CLOUDINARY_CLOUD_NAME')
+            thumbnail_url = f"https://res.cloudinary.com/{cloud_name}/video/upload/so_0,f_jpg/{public_id}.jpg"
 
             video.cloudinary_public_id = public_id
             video.video_url = result['secure_url']
@@ -39,9 +37,6 @@ class VideoUploadView(APIView):
 
             return Response({
                 "message": "Video uploaded successfully",
-                "video_id": video.id,
-                "video_url": video.video_url,
-                "thumbnail_url": video.thumbnail_url,
                 "video": VideoSerializer(video).data
             }, status=status.HTTP_201_CREATED)
 
