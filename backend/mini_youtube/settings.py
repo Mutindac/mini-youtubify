@@ -80,6 +80,8 @@ ROOT_URLCONF = 'mini_youtube.urls'
 
 CORS_ALLOWED_ORIGINS = [
     "https://mini-youtubify.vercel.app",
+    "https://tazam.vercel.app",
+
 ]
 CORS_ALLOW_ALL_ORIGINS = False
 
