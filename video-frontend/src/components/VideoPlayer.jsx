@@ -16,34 +16,29 @@ export default function VideoPlayer({ url }) {
     };
 
     useEffect(() => {
-        if (!url) return;
+    if (!url) return;
 
-        const finalUrl = url;
+    if (hlsRef.current) {
+        hlsRef.current.destroy();
+    }
 
+    if (url.endsWith('.m3u8') && Hls.isSupported()) {
+        const hls = new Hls();
+        hlsRef.current = hls;
+        hls.loadSource(url);
+        hls.attachMedia(videoRef.current);
+        hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+            setLevels(data.levels);
+        });
+    } else {
+        videoRef.current.src = url;
+    }
+
+    return () => {
         if (hlsRef.current) {
             hlsRef.current.destroy();
         }
-
-        if (Hls.isSupported()) {
-            const hls = new Hls();
-            hlsRef.current = hls;
-
-            hls.loadSource(finalUrl);
-            hls.attachMedia(videoRef.current);
-
-            hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-                setLevels(data.levels);
-            });
-
-        } else if (videoRef.current?.canPlayType("application/vnd.apple.mpegurl")) {
-            videoRef.current.src = finalUrl;
-        }
-
-        return () => {
-            if (hlsRef.current) {
-                hlsRef.current.destroy();
-            }
-        };
+    };
     }, [url]);
 
     function changeQuality(e) {

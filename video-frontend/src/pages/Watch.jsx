@@ -31,7 +31,7 @@ export default function Watch() {
             {error && <p className="error">{error}</p>}
 
             <div className="video-player-container">
-                <VideoPlayer url={video.hls_playlist_url} />
+                <VideoPlayer url={video.video_url} />
             </div>
         </div>
     );
