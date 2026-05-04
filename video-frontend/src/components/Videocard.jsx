@@ -5,7 +5,7 @@ export default function VideoCard({ video }) {
 
     const thumbnailUrl = video.thumbnail_url?.startsWith("http")
     ? video.thumbnail_url
-    : `http://127.0.0.1:7000${video.thumbnail_url}`;
+    : `https://mini-youtubify.onrender.com${video.thumbnail_url}`;
 
     return (
         <div className="video-card" onClick={() => navigate(`/videos/${video.id}`)} style={{ cursor: 'pointer' }}>
