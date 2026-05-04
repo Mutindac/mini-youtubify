@@ -1,5 +1,6 @@
 import subprocess
 import os
+import shutil
 FFMPEG_PATH = shutil.which("ffmpeg") or "ffmpeg"
 
 def process_video(input_path, output_path):
