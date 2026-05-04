@@ -1,5 +1,4 @@
 import cloudinary.uploader
-from decouple import config
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -25,7 +24,7 @@ class VideoUploadView(APIView):
                 eager_async=True,
             )
 
-            ppublic_id = result['public_id']
+            public_id = result['public_id']
             cloud_name = "dvhvxdnrh"
             thumbnail_url = f"https://res.cloudinary.com/{cloud_name}/video/upload/so_0,f_jpg/{public_id}.jpg"
 
