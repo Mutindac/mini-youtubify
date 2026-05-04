@@ -1,99 +1,56 @@
-import os
-from django.shortcuts import render
+import cloudinary.uploader
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Video
 from .serializers import VideoSerializer
-from .utils import process_video, generate_thumbnail, convert_to_hls
 
 
 class VideoUploadView(APIView):
     def post(self, request):
-        serializer = VideoSerializer(data=request.data)
+        title = request.data.get('title')
+        video_file = request.FILES.get('video_file')
 
-        if serializer.is_valid():
-            video = serializer.save(status="processing")
+        if not title or not video_file:
+            return Response({"error": "Title and video file are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # paths
-            input_path = video.video_file.path
-            processed_path = input_path.replace(".mp4", "_processed.mp4")
+        video = Video.objects.create(title=title, status='processing')
 
-            thumbnail_dir = os.path.join("media", "thumbnails")
-            os.makedirs(thumbnail_dir, exist_ok=True)
-
-            thumbnail_path = os.path.join(
-                thumbnail_dir, f"{video.id}_thumbnail.jpg"
+        try:
+            # Upload to Cloudinary
+            result = cloudinary.uploader.upload(
+                video_file,
+                resource_type='video',
+                folder='mini_youtube',
+                eager=[{"streaming_profile": "full_hd", "format": "m3u8"}],
+                eager_async=True,
             )
 
-            hls_output_dir = os.path.join(
-                "media", "processed", f"video_{video.id}"
-            )
-            os.makedirs(hls_output_dir, exist_ok=True)
+            public_id = result['public_id']
 
-            try:
-                # process video
-                process_video(input_path, processed_path)
+            # Cloudinary auto thumbnail
+            thumbnail_url = f"https://res.cloudinary.com/{result['secure_url'].split('/')[4]}/video/upload/so_0,f_jpg/{public_id}.jpg"
 
-                # generate thumbnail
-                generate_thumbnail(processed_path, thumbnail_path)
+            video.cloudinary_public_id = public_id
+            video.video_url = result['secure_url']
+            video.thumbnail_url = thumbnail_url
+            video.status = 'ready'
+            video.save()
 
-                # convert to HLS
-                playlist_path = convert_to_hls(
-                    processed_path, hls_output_dir
-                )
+            return Response({
+                "message": "Video uploaded successfully",
+                "video_id": video.id,
+                "video_url": video.video_url,
+                "thumbnail_url": video.thumbnail_url,
+                "video": VideoSerializer(video).data
+            }, status=status.HTTP_201_CREATED)
 
-                if not playlist_path:
-                    raise Exception("Failed to convert video to HLS")
+        except Exception as e:
+            print("Upload error:", e)
+            video.status = 'failed'
+            video.save()
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-                # save thumbnail
-                with open(thumbnail_path, "rb") as f:
-                    video.thumbnail.save(
-                        f"{video.id}_thumbnail.jpg",
-                        f,
-                        save=False
-                    )
-
-                # save relative path
-                video.hls_playlist = os.path.relpath(
-                    playlist_path, "media"
-                ).replace("\\", "/")
-
-                video.status = "ready"
-                video.save()
-
-               
-                hls_url = request.build_absolute_uri(
-                    f"/media/{video.hls_playlist}"
-                )
-
-                return Response({
-                    "message": "Video uploaded and processed successfully",
-                    "status": video.status,
-                    "video_id": video.id,
-                    "thumbnail_url": request.build_absolute_uri(video.thumbnail.url)
-                    if video.thumbnail else None,
-                    "hls_playlist_url": hls_url,
-                    "video": VideoSerializer(video).data
-                }, status=status.HTTP_201_CREATED)
-
-            except Exception as e:
-                print("Error processing video:", e)
-
-                video.status = "failed"
-                video.save()
-
-                return Response({
-                    "message": "Video uploaded but failed to process",
-                    "status": video.status,
-                    "video_id": video.id,
-                    "error": str(e)
-                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# VIDEO LIST
 
 class VideoListView(APIView):
     def get(self, request):
@@ -102,26 +59,11 @@ class VideoListView(APIView):
         return Response(serializer.data)
 
 
-# VIDEO DETAIL
-
 class VideoDetailView(APIView):
     def get(self, request, video_id):
         try:
             video = Video.objects.get(id=video_id)
-
-            hls_url = None
-            if video.hls_playlist:
-                hls_url = request.build_absolute_uri(
-                    f"/media/{video.hls_playlist}"
-                )
-
             data = VideoSerializer(video).data
-            data["hls_playlist_url"] = hls_url
-
             return Response(data, status=status.HTTP_200_OK)
-
         except Video.DoesNotExist:
-            return Response(
-                {"error": "Video not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "Video not found"}, status=status.HTTP_404_NOT_FOUND)
