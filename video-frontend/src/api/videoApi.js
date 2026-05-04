@@ -9,19 +9,19 @@ export async function getVideos() {
     return res.json();
 }
 
-export async function uploadVideo(formData, onProgress) {
+export async function uploadVideo(formData, token, onProgress) {
     const res = await axios.post(
         `${BASE_URL}/videos/upload/`,
         formData,
         {
             headers: {
                 "Content-Type": "multipart/form-data",
+                "Authorization": `Bearer ${token}`
             },
             onUploadProgress: (event) => {
                 const percent = Math.round(
                     (event.loaded * 100) / event.total
                 );
-
                 if (onProgress) onProgress(percent);
             },
         }
